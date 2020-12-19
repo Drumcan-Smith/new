@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Kaikei</title>
+    <script src="node_modules/@chirimen-raspi/polyfill/polyfill.js"></script>
+    <script src="node_modules/@chirimen/sht30/sht30.js"></script>
+    <script src="node_modules/@chirimen/ads1x15/ads1x15.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@latest/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@latest/dist/jsQR.min.js"></script>
+    <script src="./main.js" defer></script>
+    <style>
+      bdtemp {
+        color: blue;
+        font-size: 24px;
+      }
+      warning {
+        color: red;
+        font-size: 24px;
+      }
+      div.inp {
+        width: 50px;
+        height: 50px;
+        top: 50px;
+        left: 50px;
+      }
+      div.but {
+        width: 150px;
+        height: 50px;
+        top: 50px;
+        left: 150px;
+      }
+      div.hin {
+        width: 150px;
+        height: 50px;
+        top: 100px;
+        left: 50px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <bdtemp>
+      <span>体温</span>
+      <span id="temperatureDisplay"></span>
+    </bdtemp>
+    <warning>
+      <span id="error"></span>
+    </warning>
+    <video id="video" width="320" height="480" autoplay></video>
+    <canvas id="canvas" width="240" height="240"></canvas><!--ビデオカメラ描画用-->
+  <form id="form1" action="#">
+    <div class="inp">
+      <!--バーコードの数値情報はここ！---------------------------------->
+      <input type="text" id="key" onchange="fncGetHinmei(key.value)" value="0" />
+      <!---------------------------------------------------------->
+    </div>
+    <div class="hin">
+      <input type="text" id="Hinmei" value="" />
+    </div>
+    <input type="text" id="Kingak" value="0" />円
+
+    <div class="but">
+      <input type="button" onclick="location.reload(true)"  value="リセット" />
+    </div>
+    合計は
+    <br>
+    <input type="text" id="Out" value="0" />円です。
+    </br>
+  </form>
+  <table border="1" id="table">
+    <tr>
+      <th>品名</th>
+      <th>金額</th>
+      <th>取り消し</th>
+    </tr>
+  </table>
+  <div id="container"> </div>
+  <input type="button" onclick="remove()"  value="取り消し" />
+  </div>
+
+  <table>
+    <tr>
+      <td>
+        <span id="rawData0">init</span>
+        <br />
+        <span id="voltage0">init</span>
+      </td>
+      <td>
+        <span id="rawData1">init</span>
+        <br />
+        <span id="voltage1">init</span>
+      </td>
+    </tr>
+
+    <tr></tr>
+  </table>
+
+  </body>
+
+  <script>
+    (async () => { //非同期関数
+      const video = document.getElementById("video");
+      video.srcObject = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: "environment"//ここらへんはカメラの設定みたい
+        }
+      });
+      var Bkey=0;
+      var i=0;
+      while(true){
+          document.getElementById("key").value = await qrParse(video);
+          if(Bkey != key.value){
+            Bkey = key.value;
+            fncGetHinmei(key.value);
+
+            let table = document.getElementById("table");
+            let newRow = table.insertRow();
+
+            let newCell = newRow.insertCell();
+            let newText = document.createTextNode(Hinmei.value);
+            newCell.appendChild(newText);
+
+            newCell = newRow.insertCell();
+            newText = document.createTextNode(Kingak.value);
+            newCell.appendChild(newText);
+
+            newCell = newRow.insertCell();
+            newText = add(i++);
+            newCell.appendChild(newText);
+          }
+      }
+    })();
+  </script>
+  
+</html>
